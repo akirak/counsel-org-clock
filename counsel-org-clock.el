@@ -106,13 +106,25 @@ If there is no clocking task, display the clock history using
                        (nreverse (save-excursion
                                    (cl-loop for cont = (org-up-heading-safe)
                                             while cont
-                                            collect (concat (org-get-heading t t t t)
+                                            collect (concat (counsel-org-clock--get-heading-clean)
                                                             " > ")))))
                 (org-get-heading))
         (save-excursion
           ;; Move the position to the beginning of the entry for checking duplicates
           (goto-char (org-entry-beginning-position))
           (point-marker))))
+
+(defun counsel-org-clock--get-heading-clean ()
+  "A wrapper for `org-get-heading' function with org-version considered."
+  (org-get-heading t t)
+  ;; TODO: org-get-heading accepts only 0-2 arguments?
+  ;; (if (version< (org-version) "9.1")
+  ;;     (org-get-heading t t)
+  ;;   ;; Third and fourth arguments have been supported since 9.1:
+  ;;   ;; https://code.orgmode.org/bzg/org-mode/commit/53ee147f4537a051bfde366ea1459f059fdc13ef
+  ;;   ;; https://github.com/emacs-china/org-mode/blob/6dc6eb3b029ec00c10e20dcfaa0b6e328bf36e03/etc/ORG-NEWS
+  ;;   (org-get-heading t t t t))
+  )
 
 ;;;; Actions
 ;;;;; Macros to help you define actions
