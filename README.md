@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/akirak/counsel-org-clock.svg?branch=master)](https://travis-ci.org/akirak/counsel-org-clock)
+
 # counsel-org-clock
 
 Counsel-org-clock provides commands for displaying org clock entries via [Counsel (Ivy)](https://github.com/abo-abo/swiper) interface.
