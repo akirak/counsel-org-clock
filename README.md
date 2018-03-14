@@ -27,7 +27,7 @@ Actions for the selected headline (`M-o`):
 
 ## Prerequisites
 
-- Emacs 24.3 (with Org)
+- Emacs 24.1 (with Org)
 - Ivy
 
 ## Installation
