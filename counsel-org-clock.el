@@ -80,6 +80,7 @@ If there is no clocking task, display the clock history using
   (ivy-read "org-clock history: "
             (cl-remove-duplicates
              (cl-loop for marker in org-clock-history
+                      when (buffer-live-p (marker-buffer marker))
                       collect (with-current-buffer (marker-buffer marker)
                                 (save-excursion
                                   (goto-char marker)
