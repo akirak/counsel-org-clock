@@ -55,10 +55,11 @@ If there is no clocking task, display the clock history using
             (org-with-wide-buffer
              (goto-char org-clock-marker)
              (list (counsel-org-clock--candidate-at-point)
-                   (save-excursion
-                     (cl-loop for cont = (org-up-heading-safe)
-                              while cont
-                              collect (counsel-org-clock--candidate-at-point)))
+                   (nreverse
+                    (save-excursion
+                      (cl-loop for cont = (org-up-heading-safe)
+                               while cont
+                               collect (counsel-org-clock--candidate-at-point))))
                    (cdr (org-map-entries
                          'counsel-org-clock--candidate-at-point
                          nil 'tree)))))
