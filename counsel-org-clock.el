@@ -53,16 +53,15 @@ If there is no clocking task, display the clock history using
           (current ancestors descendants)
           (with-current-buffer (marker-buffer org-clock-marker)
             (org-with-wide-buffer
-             (save-excursion
-               (goto-char org-clock-marker)
-               (list (counsel-org-clock--candidate-at-point)
-                     (save-excursion
-                       (cl-loop for cont = (org-up-heading-safe)
-                                while cont
-                                collect (counsel-org-clock--candidate-at-point)))
-                     (cdr (org-map-entries
-                           'counsel-org-clock--candidate-at-point
-                           nil 'tree))))))
+             (goto-char org-clock-marker)
+             (list (counsel-org-clock--candidate-at-point)
+                   (save-excursion
+                     (cl-loop for cont = (org-up-heading-safe)
+                              while cont
+                              collect (counsel-org-clock--candidate-at-point)))
+                   (cdr (org-map-entries
+                         'counsel-org-clock--candidate-at-point
+                         nil 'tree)))))
         (ivy-read (format "headings around current org-clock [%s]: "
                           (file-name-nondirectory
                            (buffer-file-name (marker-buffer org-clock-marker))))
