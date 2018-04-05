@@ -70,7 +70,7 @@ If there is no clocking task, display the clock history using
                   :caller 'counsel-org-clock-context
                   :require-match t
                   :preselect (car current)
-                  :action (lambda (x) (org-goto-marker-or-bmk (cdr x)))))
+                  :action counsel-org-clock-default-action))
     (counsel-org-clock-history)))
 
 ;;;###autoload
@@ -88,7 +88,7 @@ If there is no clocking task, display the clock history using
              :test (lambda (x y) (equal (cdr x) (cdr y))))
             :caller 'counsel-org-clock-history
             :require-match t
-            :action (lambda (x) (org-goto-marker-or-bmk (cdr x)))))
+            :action counsel-org-clock-default-action))
 
 ;;;; Functions to format candidates
 
@@ -168,8 +168,23 @@ If there is no clocking task, display the clock history using
 
 ;;;;; Define a set of actions
 
+(defcustom counsel-org-clock-default-action
+  (lambda (x)
+    (org-goto-marker-or-bmk (cdr x)))
+  "Default action for commands in counsel-org-clock."
+  :group 'counsel-org-clock)
+
+;; (defcustom counsel-org-clock-default-action
+;;   (lambda (x)
+;;     (save-excursion
+;;       (org-goto-marker-or-bmk (cdr x))
+;;       (org-clock-in)))
+;;   "Default action for commands in counsel-org-clock."
+;;   :group 'counsel-org-clock)
+
 (defcustom counsel-org-clock-actions
-  `(("n" ,(counsel-org-clock--candidate-display-action
+  `(("g" (lambda (x) (org-goto-marker-or-bmk (cdr x))) "goto")
+    ("n" ,(counsel-org-clock--candidate-display-action
            (org-narrow-to-subtree)) "narrow")
     ("s" ,(counsel-org-clock--candidate-display-action
            (org-tree-to-indirect-buffer)) "show in indirect buffer")
