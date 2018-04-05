@@ -166,21 +166,45 @@ If there is no clocking task, display the clock history using
              (org-narrow-to-subtree)
              ,@form))))))
 
-;;;;; Define a set of actions
+;;;;; Action functions
+(defun counsel-org-clock-goto-action (cand)
+  "Jump to the heading in counsel-org-clock.
+
+CAND is a cons cell whose cdr is a marker to the entry.
+
+This is the default action in `counsel-org-clock-context' and
+`counsel-org-clock-history'. See `counsel-org-clock-default-action'."
+  (org-goto-marker-or-bmk (cdr cand)))
+
+(defun counsel-org-clock-clock-in-action (cand)
+  "Clock in to the heading in counsel-org-clock.
+
+CAND is a cons cell whose cdr is a marker to the entry.
+
+See `counsel-org-clock-default-action'."
+  (let ((marker (cdr cand)))
+    (if (buffer-live-p (marker-buffer marker))
+        (with-current-buffer (marker-buffer marker)
+          (org-with-wide-buffer
+           (goto-char marker)
+           (org-clock-in)))
+      (error "Cannot find location"))))
+
+
+;;;;; Custom variables for actions
 
 (defcustom counsel-org-clock-default-action
-  (lambda (x)
-    (org-goto-marker-or-bmk (cdr x)))
-  "Default action for commands in counsel-org-clock."
-  :group 'counsel-org-clock)
+  'counsel-org-clock-goto-action
+  "Default action for commands in counsel-org-clock.
 
-;; (defcustom counsel-org-clock-default-action
-;;   (lambda (x)
-;;     (save-excursion
-;;       (org-goto-marker-or-bmk (cdr x))
-;;       (org-clock-in)))
-;;   "Default action for commands in counsel-org-clock."
-;;   :group 'counsel-org-clock)
+This should be a function that takes a cons cell as an argument. The cdr of
+the argument is a marker to the heading. The following is a list of predefined
+actions which can be used as an option:
+
+- `counsel-org-clock-goto-action' (default)
+- `counsel-org-clock-clock-in-action'"
+  :type 'function
+  :group 'counsel-org-clock)
 
 (defcustom counsel-org-clock-actions
   `(("g" (lambda (x) (org-goto-marker-or-bmk (cdr x))) "goto")
