@@ -116,7 +116,7 @@ If there is no clocking task, display the clock history using
           (point-marker))))
 
 (defun counsel-org-clock--get-heading-clean ()
-  "A wrapper for `org-get-heading' function with org-version considered."
+  "A wrapper for `org-get-heading' function with ‘org-version’ considered."
   (org-get-heading t t)
   ;; TODO: org-get-heading accepts only 0-2 arguments?
   ;; (if (version< (org-version) "9.1")
