@@ -190,6 +190,29 @@ See `counsel-org-clock-default-action'."
            (org-clock-in)))
       (error "Cannot find location"))))
 
+(defun counsel-org-clock-clock-dwim-action (cand)
+  "Toggle the clocking status on the heading in counsel-org-clock.
+
+If the selected entry is currently clocked, clock out from it.
+Otherwise, clock in it.
+
+CAND is a cons cell whose cdr is a marker to the entry.
+
+See `counsel-org-clock-default-action'."
+  (let ((marker (cdr cand)))
+    (if (buffer-live-p (marker-buffer marker))
+        (with-current-buffer (marker-buffer marker)
+          (org-with-wide-buffer
+           (goto-char marker)
+           (if (and (org-clocking-p)
+                    (eq (org-entry-beginning-position)
+                        (with-current-buffer (marker-buffer org-clock-marker)
+                          (save-excursion
+                            (goto-char org-clock-marker)
+                            (org-entry-beginning-position)))))
+               (org-clock-out)
+             (org-clock-in))))
+      (error "Cannot find location"))))
 
 ;;;;; Custom variables for actions
 
@@ -202,7 +225,8 @@ the argument is a marker to the heading. The following is a list of predefined
 actions which can be used as an option:
 
 - `counsel-org-clock-goto-action' (default)
-- `counsel-org-clock-clock-in-action'"
+- `counsel-org-clock-clock-in-action'
+- `counsel-org-clock-clock-dwim-action'"
   :type 'function
   :group 'counsel-org-clock)
 
