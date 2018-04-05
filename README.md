@@ -36,9 +36,9 @@ This package is not yet available on MELPA. Use Quelpa or something to install t
 
 ## Usage
 
-Run `counsel-org-clock-context` or `counsel-org-clock-history`. 
+Run `counsel-org-clock-context` or `counsel-org-clock-history`. By default, these functions jump to a selected headline. You can change the default action by setting `counsel-org-clock-default-action` variable. 
 
-The default action is jumping to the headline. Alternatively, you can access a bunch of actions on the headline from `M-o`, including:
+You can also access a bunch of alternative actions from `M-o`, including:
 
 - Narrow the buffer to the selected entry or show it in an indirect buffer
 - Change the todo state
@@ -47,6 +47,10 @@ The default action is jumping to the headline. Alternatively, you can access a b
 - Clock in/out
 - Store a link
 
-# License
+## Thanks
+
+- [mbork](https://github.com/mbork) ([#1](https://github.com/akirak/counsel-org-clock/pull/1))
+
+## License
 
 GPL v3
