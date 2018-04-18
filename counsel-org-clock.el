@@ -86,7 +86,7 @@ If there is no clocking task, display the clock history using
                                 (save-excursion
                                   (goto-char marker)
                                   (counsel-org-clock--candidate-path-at-point))))
-             :test (lambda (x y) (equal (cdr x) (cdr y))))
+             :key #'cdr)
             :caller 'counsel-org-clock-history
             :require-match t
             :action counsel-org-clock-default-action))
