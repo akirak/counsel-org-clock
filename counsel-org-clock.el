@@ -429,7 +429,7 @@ See `counsel-org-clock-default-action'."
     ("p" set-property "set property")
     ("I" clock-in "clock in")
     ("O" clock-out "clock out (if current)")
-    ("l" clock-out "store link"))
+    ("l" store-link "store link"))
   "List of actions available in commands in counsel-org-clock.
 
 These actions will be available in `counsel-org-clock-context' and
