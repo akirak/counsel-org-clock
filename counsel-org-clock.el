@@ -276,6 +276,7 @@ CAND is a cons cell whose cdr is a marker to an entry in an org buffer."
                     (cdr cand)
                   (error "Invalid candidate: %s" (prin1-to-string cand)))))
     (pcase action
+      ('nil (org-goto-marker-or-bmk marker))
       ('goto (org-goto-marker-or-bmk marker))
       ('clock-in (counsel-org-clock--clock-in-marker marker))
       ('clock-dwim (counsel-org-clock--clock-dwim-marker marker))
