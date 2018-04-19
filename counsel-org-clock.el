@@ -375,14 +375,28 @@ CAND is a cons cell whose cdr is a marker to an entry in an org buffer."
 
 ;;;;; Default action
 
+(define-widget 'counsel-org-clock-action-type 'lazy
+  "An action in counsel-org-clock."
+  :tag "Action"
+  :type '(choice (const :tag "Default" nil)
+                 (const :tag "Go to" goto)
+                 (const :tag "Clock in" clock-in)
+                 (const :tag "Toggle clock in/out" clock-dwim)
+                 (const :tag "Clock out" clock-out)
+                 (const :tag "Store a link" store-link)
+                 (const :tag "Narrow to the entry" narrow)
+                 (const :tag "Show in an indirect buffer" indirect)
+                 (const :tag "Change the todo state" todo)
+                 (const :tag "Set tags" set-tags)
+                 (const :tag "Set a property" set-property)
+                 function))
+
 (defcustom counsel-org-clock-default-action
   'goto
   "Default action for commands in counsel-org-clock."
-  :type '(choice (const :tag "Go to" goto)
-                 (const :tag "Clock in" clock-in)
-                 (const :tag "Toggle clock in/out" clock-dwim)
-                 function)
-  :group 'counsel-org-clock)
+  :type 'counsel-org-clock-action-type
+  :group 'counsel-org-clock
+  :package-version "0.2")
 
 (defun counsel-org-clock--run-context-action (cand)
   "The default action in `counsel-org-clock-context'.
