@@ -49,29 +49,50 @@ If there is no clocking task, display the clock history using
 `counsel-org-clock-history'."
   (interactive)
   (if (org-clocking-p)
-      (cl-destructuring-bind
-          (current ancestors descendants)
-          (with-current-buffer (marker-buffer org-clock-marker)
-            (org-with-wide-buffer
-             (goto-char org-clock-marker)
-             (list (counsel-org-clock--candidate-at-point)
-                   (nreverse
-                    (save-excursion
-                      (cl-loop for cont = (org-up-heading-safe)
-                               while cont
-                               collect (counsel-org-clock--candidate-at-point))))
-                   (cdr (org-map-entries
-                         'counsel-org-clock--candidate-at-point
-                         nil 'tree)))))
-        (ivy-read (format "headings around current org-clock [%s]: "
-                          (file-name-nondirectory
-                           (buffer-file-name (marker-buffer org-clock-marker))))
-                  (append ancestors (list current) descendants)
-                  :caller 'counsel-org-clock-context
-                  :require-match t
-                  :preselect (car current)
-                  :action counsel-org-clock-default-action))
+      (counsel-org-clock--ivy-context org-clock-marker
+                                      (format "headings around current org-clock [%s]: "
+                                              (file-name-nondirectory
+                                               (buffer-file-name (marker-buffer org-clock-marker)))))
     (counsel-org-clock-history)))
+
+(defun counsel-org-clock--ivy-context (marker prompt)
+  "Display the context of an org heading pointed by MARKER with PROMPT via Ivy.
+
+The ancestors of the heading, the heading, and its descendants are shown in this
+order."
+  (cl-destructuring-bind
+      (selection candidates)
+      (counsel-org-clock--get-marker-context marker)
+    (ivy-read prompt
+              candidates
+              :caller 'counsel-org-clock-context
+              :require-match t
+              :preselect selection
+              :action counsel-org-clock-default-action)))
+
+(defun counsel-org-clock--get-marker-context (marker)
+  "Get the context of MARKER.
+
+The returned value is a list which consists of the following elements:
+
+1. A string to be used as :preselect in ivy.
+2. An alist of candidates to be used in ivy.
+
+The result is used in `counsel-org-clock-context' when there is a clocking task."
+  (with-current-buffer (marker-buffer marker)
+    (org-with-wide-buffer
+     (goto-char marker)
+     (let ((current (counsel-org-clock--candidate-at-point))
+           (ancestors (nreverse
+                       (save-excursion
+                         (cl-loop for cont = (org-up-heading-safe)
+                                  while cont
+                                  collect (counsel-org-clock--candidate-at-point)))))
+           (descendants (cdr (org-map-entries
+                              'counsel-org-clock--candidate-at-point
+                              nil 'tree))))
+       (list (car current)
+             (append ancestors (list current) descendants))))))
 
 ;;;###autoload
 (defun counsel-org-clock-history ()
