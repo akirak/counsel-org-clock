@@ -70,7 +70,7 @@ If there is no clocking task, display the clock history using
                   :caller 'counsel-org-clock-context
                   :require-match t
                   :preselect (car current)
-                  :action 'counsel-org-clock-default-action))
+                  :action counsel-org-clock-default-action))
     (counsel-org-clock-history)))
 
 ;;;###autoload
@@ -89,7 +89,7 @@ If there is no clocking task, display the clock history using
              :key #'cdr)
             :caller 'counsel-org-clock-history
             :require-match t
-            :action 'counsel-org-clock-default-action))
+            :action counsel-org-clock-default-action))
 
 ;;;; Functions to format candidates
 
