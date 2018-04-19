@@ -421,38 +421,34 @@ See `counsel-org-clock-default-action'."
 ;;;;; Alternative actions
 
 (defcustom counsel-org-clock-actions
-  `(("g" (lambda (x) (org-goto-marker-or-bmk (cdr x))) "goto")
-    ("n" ,(counsel-org-clock--candidate-display-action
-           (org-narrow-to-subtree)) "narrow")
-    ("s" ,(counsel-org-clock--candidate-display-action
-           (org-tree-to-indirect-buffer)) "show in indirect buffer")
-    ("t" ,(counsel-org-clock--candidate-interactive-action
-           (org-todo)) "change todo state")
-    ("q" ,(counsel-org-clock--candidate-interactive-action
-           (org-set-tags-command)) "set tags")
-    ("p" ,(counsel-org-clock--candidate-interactive-action
-           (call-interactively 'org-set-property)) "set property")
-    ("I" ,(counsel-org-clock--candidate-widen-action
-           (org-clock-in)) "clock in")
-    ("O" ,(counsel-org-clock--candidate-widen-action
-           (when (org-clocking-p)
-             (let ((clock (with-current-buffer (marker-buffer org-clock-marker)
-                            (save-excursion
-                              (goto-char org-clock-marker)
-                              (org-entry-beginning-position)))))
-               (when (eq clock (org-entry-beginning-position))
-                 (org-clock-out))))) "clock out (if current)")
-    ("l" ,(counsel-org-clock--candidate-widen-action
-           (call-interactively 'org-store-link)) "store link"))
+  '(("g" goto "goto")
+    ("n" narrow "narrow")
+    ("s" indirect "show in indirect buffer")
+    ("t" todo "change todo state")
+    ("q" set-tags "set tags")
+    ("p" set-property "set property")
+    ("I" clock-in "clock in")
+    ("O" clock-out "clock out (if current)")
+    ("l" clock-out "store link"))
   "List of actions available in commands in counsel-org-clock.
 
 These actions will be available in `counsel-org-clock-context' and
-`counsel-org-clock-history' commands. To customize the actions in those
-commands, you have to set this variable before the package is loaded."
-  :group 'counsel-org-clock)
-
-(ivy-set-actions 'counsel-org-clock-context counsel-org-clock-actions)
-(ivy-set-actions 'counsel-org-clock-history counsel-org-clock-actions)
+`counsel-org-clock-history' commands."
+  :type '(repeat (list (string :tag "Key")
+                       counsel-org-clock-action-type
+                       (string :tag "Label")))
+  :set (lambda (_ value)
+         (let ((actions (cl-loop for (key action label) in value
+                                 collect (list key
+                                               `(lambda (cand)
+                                                  (counsel-org-clock--dispatch-action
+                                                   (quote ,action) cand))
+                                               label))))
+           (dolist (cmd '(counsel-org-clock-context
+                          counsel-org-clock-history))
+             (ivy-set-actions cmd actions))))
+  :group 'counsel-org-clock
+  :package-version "0.2")
 
 (provide 'counsel-org-clock)
 ;;; counsel-org-clock.el ends here
