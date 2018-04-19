@@ -103,10 +103,11 @@ The result is used in `counsel-org-clock-context' when there is a clocking task.
              (cl-loop for marker in org-clock-history
                       when (markerp marker)
                       when (buffer-live-p (marker-buffer marker))
-                      collect (with-current-buffer (marker-buffer marker)
-                                (save-excursion
-                                  (goto-char marker)
-                                  (counsel-org-clock--candidate-path-at-point))))
+                      collect (ignore-errors
+                                (with-current-buffer (org-base-buffer (marker-buffer marker))
+                                  (org-with-wide-buffer
+                                   (goto-char marker)
+                                   (counsel-org-clock--candidate-path-at-point)))))
              :key #'cdr)
             :caller 'counsel-org-clock-history
             :require-match t
