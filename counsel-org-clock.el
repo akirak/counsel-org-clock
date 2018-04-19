@@ -68,7 +68,7 @@ order."
               :caller 'counsel-org-clock-context
               :require-match t
               :preselect selection
-              :action counsel-org-clock-default-action)))
+              :action #'counsel-org-clock--run-context-action)))
 
 (defun counsel-org-clock--get-marker-context (marker)
   "Get the context of MARKER.
@@ -111,7 +111,7 @@ The result is used in `counsel-org-clock-context' when there is a clocking task.
              :key #'cdr)
             :caller 'counsel-org-clock-history
             :require-match t
-            :action counsel-org-clock-default-action))
+            :action #'counsel-org-clock--run-history-action))
 
 ;;;; Functions to format candidates
 
@@ -166,7 +166,9 @@ The result is used in `counsel-org-clock-context' when there is a clocking task.
          ,@form))))
 
 (defmacro counsel-org-clock--candidate-widen-action (&rest form)
-  "Create an anonymous function to run FORM silently with a given candidate."
+  "Create an anonymous function to run FORM silently with a given candidate.
+
+This is deprecated in 0.2. Use `counsel-org-clock--with-marker'."
   `(lambda (cand)
      (let ((marker (cdr cand)))
        (when (buffer-live-p (marker-buffer marker))
@@ -174,6 +176,16 @@ The result is used in `counsel-org-clock-context' when there is a clocking task.
            (org-with-wide-buffer
             (goto-char marker)
             ,@form))))))
+
+(defmacro counsel-org-clock--with-marker (marker &rest form)
+  "Temporarily go to MARKER and run FORM."
+  (declare (indent 1))
+  `(if (buffer-live-p (marker-buffer marker))
+       (with-current-buffer (org-base-buffer (marker-buffer marker))
+         (org-with-wide-buffer
+          (goto-char ,marker)
+          ,@form))
+     (error "Cannot find location")))
 
 (defmacro counsel-org-clock--candidate-interactive-action (&rest form)
   "Create an anonymous function to run FORM in a temporary window."
@@ -195,16 +207,20 @@ The result is used in `counsel-org-clock-context' when there is a clocking task.
 
 CAND is a cons cell whose cdr is a marker to the entry.
 
-This is the default action in `counsel-org-clock-context' and
-`counsel-org-clock-history'. See `counsel-org-clock-default-action'."
+This function is deprecated in 0.2."
   (org-goto-marker-or-bmk (cdr cand)))
+
+(defun counsel-org-clock--clock-in-marker (marker)
+  "Start a clock on the heading pointed by MARKER."
+  (counsel-org-clock--with-marker marker
+    (org-clock-in)))
 
 (defun counsel-org-clock-clock-in-action (cand)
   "Clock in to the heading in counsel-org-clock.
 
 CAND is a cons cell whose cdr is a marker to the entry.
 
-See `counsel-org-clock-default-action'."
+This function is deprecated in 0.2."
   (let ((marker (cdr cand)))
     (if (buffer-live-p (marker-buffer marker))
         (with-current-buffer (marker-buffer marker)
@@ -212,6 +228,18 @@ See `counsel-org-clock-default-action'."
            (goto-char marker)
            (org-clock-in)))
       (error "Cannot find location"))))
+
+(defun counsel-org-clock--clock-dwim-marker (marker)
+  "Toggle the clocking status on the heading pointed by MARKER."
+  (counsel-org-clock--with-marker marker
+    (if (and (org-clocking-p)
+             (eq (org-entry-beginning-position)
+                 (with-current-buffer (marker-buffer org-clock-marker)
+                   (save-excursion
+                     (goto-char org-clock-marker)
+                     (org-entry-beginning-position)))))
+        (org-clock-out)
+      (org-clock-in))))
 
 (defun counsel-org-clock-clock-dwim-action (cand)
   "Toggle the clocking status on the heading in counsel-org-clock.
@@ -221,7 +249,7 @@ Otherwise, clock in it.
 
 CAND is a cons cell whose cdr is a marker to the entry.
 
-See `counsel-org-clock-default-action'."
+This function is deprecated in 0.2."
   (let ((marker (cdr cand)))
     (if (buffer-live-p (marker-buffer marker))
         (with-current-buffer (marker-buffer marker)
@@ -237,21 +265,58 @@ See `counsel-org-clock-default-action'."
              (org-clock-in))))
       (error "Cannot find location"))))
 
-;;;;; Custom variables for actions
+;;;;; Dispatching an action
+(defun counsel-org-clock--dispatch-action (action cand)
+  "Dispatch ACTION on CAND.
+
+ACTION is a symbol indicating an action or a function on a marker.
+
+CAND is a cons cell whose cdr is a marker to an entry in an org buffer."
+  (let ((marker (if (markerp (cdr cand))
+                    (cdr cand)
+                  (error "Invalid candidate: %s" (prin1-to-string cand)))))
+    (pcase action
+      ('goto (org-goto-marker-or-bmk marker))
+      ('clock-in (counsel-org-clock--clock-in-marker marker))
+      ('clock-dwim (counsel-org-clock--clock-dwim-marker marker))
+      ;; Handle deprecated options
+      ('counsel-org-clock-goto-action (org-goto-marker-or-bmk marker))
+      ('counsel-org-clock-clock-in-action (counsel-org-clock--clock-in-marker marker))
+      ('counsel-org-clock-clock-dwim-action (counsel-org-clock--clock-dwim-marker marker))
+      ;; User-defined action
+      ((pred functionp) (funcall action marker))
+      (_ (error "Unsupported type of action: %s" (prin1-to-string action))))))
+
+;;;;; Default action
 
 (defcustom counsel-org-clock-default-action
-  'counsel-org-clock-goto-action
-  "Default action for commands in counsel-org-clock.
-
-This should be a function that takes a cons cell as an argument. The cdr of
-the argument is a marker to the heading. The following is a list of predefined
-actions which can be used as an option:
-
-- `counsel-org-clock-goto-action' (default)
-- `counsel-org-clock-clock-in-action'
-- `counsel-org-clock-clock-dwim-action'"
-  :type 'function
+  'goto
+  "Default action for commands in counsel-org-clock."
+  :type '(choice (const :tag "Go to" goto)
+                 (const :tag "Clock in" clock-in)
+                 (const :tag "Toggle clock in/out" clock-dwim)
+                 function)
   :group 'counsel-org-clock)
+
+(defun counsel-org-clock--run-context-action (cand)
+  "The default action in `counsel-org-clock-context'.
+
+CAND is a cons cell whose cdr is a marker to the heading.
+
+See `counsel-org-clock-default-action'."
+  (counsel-org-clock--dispatch-action counsel-org-clock-default-action
+                                      cand))
+
+(defun counsel-org-clock--run-history-action (cand)
+  "The default action in `counsel-org-clock-history'.
+
+CAND is a cons cell whose cdr is a marker to the heading.
+
+See `counsel-org-clock-default-action'."
+  (counsel-org-clock--dispatch-action counsel-org-clock-default-action
+                                      cand))
+
+;;;;; Alternative actions
 
 (defcustom counsel-org-clock-actions
   `(("g" (lambda (x) (org-goto-marker-or-bmk (cdr x))) "goto")
@@ -283,8 +348,6 @@ These actions will be available in `counsel-org-clock-context' and
 `counsel-org-clock-history' commands. To customize the actions in those
 commands, you have to set this variable before the package is loaded."
   :group 'counsel-org-clock)
-
-;;;;; Set the actions
 
 (ivy-set-actions 'counsel-org-clock-context counsel-org-clock-actions)
 (ivy-set-actions 'counsel-org-clock-history counsel-org-clock-actions)
