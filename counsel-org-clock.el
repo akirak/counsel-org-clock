@@ -79,7 +79,7 @@ The returned value is a list which consists of the following elements:
 2. An alist of candidates to be used in ivy.
 
 The result is used in `counsel-org-clock-context' when there is a clocking task."
-  (with-current-buffer (marker-buffer marker)
+  (with-current-buffer (org-base-buffer (marker-buffer marker))
     (org-with-wide-buffer
      (goto-char marker)
      (let ((current (counsel-org-clock--candidate-at-point))
