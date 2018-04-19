@@ -304,6 +304,7 @@ CAND is a cons cell whose cdr is a marker to an entry in an org buffer."
 CAND is a cons cell whose cdr is a marker to the heading.
 
 See `counsel-org-clock-default-action'."
+  ;; TODO: Allow the user to override the default action for the command
   (counsel-org-clock--dispatch-action counsel-org-clock-default-action
                                       cand))
 
@@ -313,6 +314,7 @@ See `counsel-org-clock-default-action'."
 CAND is a cons cell whose cdr is a marker to the heading.
 
 See `counsel-org-clock-default-action'."
+  ;; TODO: Allow the user to override the default action for the command
   (counsel-org-clock--dispatch-action counsel-org-clock-default-action
                                       cand))
 
