@@ -153,8 +153,23 @@ The result is used in `counsel-org-clock-context' when there is a clocking task.
 ;;;; Actions
 ;;;;; Macros to help you define actions
 
+(defmacro counsel-org-clock--after-display (marker &rest form)
+  "Jump to MARKER, display the context, and run FORM."
+  (declare (indent 1))
+  `(if (buffer-live-p (marker-buffer ,marker))
+       (progn
+         (pop-to-buffer (marker-buffer ,marker))
+         (when (or (> ,marker (point-max)) (< ,marker (point-min)))
+           (widen))
+         (goto-char ,marker)
+         (org-show-context)
+         ,@form)
+     (error "Cannot find location")))
+
 (defmacro counsel-org-clock--candidate-display-action (&rest form)
-  "Create an anonymous function to display a given candidate and run FORM."
+  "Create an anonymous function to display a given candidate and run FORM.
+
+Deprecated since 0.2."
   `(lambda (cand)
      (let ((marker (cdr cand)))
        (when (buffer-live-p (marker-buffer marker))
@@ -187,8 +202,25 @@ This is deprecated in 0.2. Use `counsel-org-clock--with-marker'."
           ,@form))
      (error "Cannot find location")))
 
+(defmacro counsel-org-clock--with-marker-interactively (marker &rest form)
+  "Temporarily go to MARKER, run FORM, and restore the window configuration."
+  (declare (indent 1))
+  `(if (buffer-live-p (marker-buffer ,marker))
+       (save-window-excursion
+         (pop-to-buffer-same-window (marker-buffer ,marker))
+         (delete-other-windows)
+         (save-excursion
+           (save-restriction
+             (widen)
+             (goto-char ,marker)
+             (org-narrow-to-subtree)
+             ,@form)))
+     (error "Cannot find location")))
+
 (defmacro counsel-org-clock--candidate-interactive-action (&rest form)
-  "Create an anonymous function to run FORM in a temporary window."
+  "Create an anonymous function to run FORM in a temporary window.
+
+Deprecated since 0.2."
   `(lambda (cand)
      (let ((marker (cdr cand)))
        (save-window-excursion
@@ -265,7 +297,65 @@ This function is deprecated in 0.2."
              (org-clock-in))))
       (error "Cannot find location"))))
 
+(defun counsel-org-clock--narrow-marker (marker)
+  "Narrow to the entry at MARKER."
+  (counsel-org-clock--after-display marker
+    (org-narrow-to-subtree)))
+
+(defun counsel-org-clock--indirect-marker (marker)
+  "Show the entry at MARKER in an indirect buffer."
+  (counsel-org-clock--after-display marker
+    (org-tree-to-indirect-buffer)))
+
+(defun counsel-org-clock--store-link-marker (marker)
+  "Store a link to the entry at MARKER."
+  (counsel-org-clock--with-marker marker
+    (call-interactively 'org-store-link)))
+
+(defun counsel-org-clock--clock-out-marker (marker)
+  "Clock out from the current clock if MARKER is clocked."
+  (when (org-clocking-p)
+    (counsel-org-clock--with-marker marker
+      (let ((clock (with-current-buffer (marker-buffer org-clock-marker)
+                     (save-excursion
+                       (goto-char org-clock-marker)
+                       (org-entry-beginning-position)))))
+        (when (eq clock (org-entry-beginning-position))
+          (org-clock-out))))))
+
+(defun counsel-org-clock--todo-marker (marker)
+  "Change the todo state of the entry at MARKER."
+  (counsel-org-clock--with-marker-interactively marker
+    (org-todo)))
+
+(defun counsel-org-clock--set-tags-marker (marker)
+  "Set tags on the entry at MARKER."
+  (counsel-org-clock--with-marker-interactively marker
+    (org-set-tags-command)))
+
+(defun counsel-org-clock--set-property-marker (marker)
+  "Set a property on the entry at MARKER."
+  (counsel-org-clock--with-marker-interactively marker
+    (call-interactively 'org-set-property)))
+
 ;;;;; Dispatching an action
+(defconst counsel-org-clock-action-map
+  '((goto . org-goto-marker-or-bmk)
+    (clock-in . counsel-org-clock--clock-in-marker)
+    (clock-dwim . counsel-org-clock--clock-dwim-marker)
+    (clock-out . counsel-org-clock--clock-out-marker)
+    (store-link . counsel-org-clock--store-link-marker)
+    (narrow . counsel-org-clock--narrow-marker)
+    (indirect . counsel-org-clock--indirect-marker)
+    (todo . counsel-org-clock--todo-marker)
+    (set-tags . counsel-org-clock--set-tags-marker)
+    (set-property . counsel-org-clock--set-property-marker)
+    ;; Deprecated options formerly available in `counsel-org-clock-default-action'
+    (counsel-org-clock-goto-action . org-goto-marker-or-bmk)
+    (counsel-org-clock-clock-in-action . counsel-org-clock--clock-in-marker)
+    (counsel-org-clock-clock-dwim-action . counsel-org-clock--clock-dwim-marker))
+  "Alist of actions supported in `counsel-org-clock--dispatch-action'.")
+
 (defun counsel-org-clock--dispatch-action (action cand)
   "Dispatch ACTION on CAND.
 
@@ -275,18 +365,13 @@ CAND is a cons cell whose cdr is a marker to an entry in an org buffer."
   (let ((marker (if (markerp (cdr cand))
                     (cdr cand)
                   (error "Invalid candidate: %s" (prin1-to-string cand)))))
-    (pcase action
-      ('nil (org-goto-marker-or-bmk marker))
-      ('goto (org-goto-marker-or-bmk marker))
-      ('clock-in (counsel-org-clock--clock-in-marker marker))
-      ('clock-dwim (counsel-org-clock--clock-dwim-marker marker))
-      ;; Handle deprecated options
-      ('counsel-org-clock-goto-action (org-goto-marker-or-bmk marker))
-      ('counsel-org-clock-clock-in-action (counsel-org-clock--clock-in-marker marker))
-      ('counsel-org-clock-clock-dwim-action (counsel-org-clock--clock-dwim-marker marker))
-      ;; User-defined action
-      ((pred functionp) (funcall action marker))
-      (_ (error "Unsupported type of action: %s" (prin1-to-string action))))))
+    (funcall (or (cdr (assq action counsel-org-clock-action-map))
+                 (cond
+                  ((null action) #'org-goto-marker-or-bmk)
+                  ((functionp action) action)
+                  (t (error "Unsupported type of action: %s"
+                            (prin1-to-string action)))))
+             marker)))
 
 ;;;;; Default action
 
