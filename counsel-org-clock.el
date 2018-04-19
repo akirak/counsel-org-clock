@@ -180,8 +180,8 @@ This is deprecated in 0.2. Use `counsel-org-clock--with-marker'."
 (defmacro counsel-org-clock--with-marker (marker &rest form)
   "Temporarily go to MARKER and run FORM."
   (declare (indent 1))
-  `(if (buffer-live-p (marker-buffer marker))
-       (with-current-buffer (org-base-buffer (marker-buffer marker))
+  `(if (buffer-live-p (marker-buffer ,marker))
+       (with-current-buffer (org-base-buffer (marker-buffer ,marker))
          (org-with-wide-buffer
           (goto-char ,marker)
           ,@form))
