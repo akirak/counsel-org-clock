@@ -4,7 +4,7 @@
 
 ;; Author: Akira Komamura <akira.komamura@gmail.com>
 ;; Version: 0.2
-;; Package-Requires: ((emacs "24.1") (ivy "0.10.0"))
+;; Package-Requires: ((emacs "24.3") (ivy "0.10.0"))
 ;; URL: https://github.com/akirak/counsel-org-clock
 
 ;; This file is not part of GNU Emacs.
