@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/akirak/counsel-org-clock.svg?branch=master)](https://travis-ci.org/akirak/counsel-org-clock)
+[![MELPA](http://melpa.milkbox.net/packages/counsel-org-clock-badge.svg)](http://melpa.milkbox.net/#/counsel-org-clock)
 
 # counsel-org-clock
 
@@ -32,7 +33,7 @@ Actions for the selected headline (`M-o`):
 
 ## Installation
 
-This package is not yet available on MELPA. Use Quelpa or something to install the package from this repository.
+This package is available on MELPA as `counsel-org-clock`.
 
 ## Usage
 
