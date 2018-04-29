@@ -158,7 +158,7 @@ If prefix ARG is given, rebuild the history from `org-agenda-files'."
 ;;;; History
 (defun counsel-org-clock--last-clock ()
   "Get the last clock time in the entry."
-  (when (re-search-forward org-clock-line-re
+  (when (re-search-forward (concat "^[ \t]*" org-clock-string)
                            (save-excursion
                              ;; Jump to a position after the beginning of the entry
                              (end-of-line)
@@ -166,7 +166,7 @@ If prefix ARG is given, rebuild the history from `org-agenda-files'."
                            'noerror)
     (let ((src (thing-at-point 'line 'no-properties)))
       (when (string-match (org-re-timestamp 'inactive) src)
-        (org-timestamp-from-string (match-string 0 src))))))
+        (org-time-string-to-time (match-string 0 src))))))
 
 (defun counsel-org-clock--get-history-entries (limit &optional include-archives)
   "Get org-clock-history entries from `org-agenda-files'."
@@ -174,13 +174,13 @@ If prefix ARG is given, rebuild the history from `org-agenda-files'."
                           (let ((marker (point-marker))
                                 (time (counsel-org-clock--last-clock)))
                             (when time
-                              (cons (org-timestamp-to-time time) marker))))
+                              (cons time marker))))
                         nil
                         (if include-archives 'agenda-with-archives 'agenda))
        (cl-remove nil it)
        (cl-sort it #'time-less-p :key 'car)
+       (-take-last limit it)
        (nreverse it)
-       (seq-take it limit)
        (mapcar #'cdr it)))
 
 (defcustom counsel-org-clock-history-limit org-clock-history-length
