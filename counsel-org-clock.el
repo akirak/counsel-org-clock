@@ -4,7 +4,7 @@
 
 ;; Author: Akira Komamura <akira.komamura@gmail.com>
 ;; Version: 0.2
-;; Package-Requires: ((emacs "24.3") (ivy "0.10.0") (dash "2.14"))
+;; Package-Requires: ((emacs "24.3") (ivy "0.10.0") (dash "2.0"))
 ;; URL: https://github.com/akirak/counsel-org-clock
 
 ;; This file is not part of GNU Emacs.
@@ -179,8 +179,8 @@ If prefix ARG is given, rebuild the history from `org-agenda-files'."
                         (if include-archives 'agenda-with-archives 'agenda))
        (cl-remove nil it)
        (cl-sort it #'time-less-p :key 'car)
-       (-take-last limit it)
        (nreverse it)
+       (-take limit it)
        (mapcar #'cdr it)))
 
 (defcustom counsel-org-clock-history-limit org-clock-history-length
