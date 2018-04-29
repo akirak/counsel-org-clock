@@ -4,7 +4,7 @@
 
 ;; Author: Akira Komamura <akira.komamura@gmail.com>
 ;; Version: 0.2
-;; Package-Requires: ((emacs "24.3") (ivy "0.10.0"))
+;; Package-Requires: ((emacs "24.3") (ivy "0.10.0") (dash "2.0"))
 ;; URL: https://github.com/akirak/counsel-org-clock
 
 ;; This file is not part of GNU Emacs.
@@ -38,22 +38,23 @@
 (require 'cl-lib)
 (require 'ivy)
 (require 'org-clock)
+(require 'dash)
 
 ;;;; Counsel commands
 
 ;;;###autoload
-(defun counsel-org-clock-context ()
+(defun counsel-org-clock-context (&optional arg)
   "Display the current org-clock, its ancestors, and its descendants via Ivy.
 
 If there is no clocking task, display the clock history using
 `counsel-org-clock-history'."
-  (interactive)
+  (interactive "P")
   (if (org-clocking-p)
       (counsel-org-clock--ivy-context org-clock-marker
                                       (format "headings around current org-clock [%s]: "
                                               (file-name-nondirectory
                                                (buffer-file-name (marker-buffer org-clock-marker)))))
-    (counsel-org-clock-history)))
+    (counsel-org-clock-history arg)))
 
 (defun counsel-org-clock--ivy-context (marker prompt)
   "Display the context of an org heading pointed by MARKER with PROMPT via Ivy.
@@ -95,9 +96,13 @@ The result is used in `counsel-org-clock-context' when there is a clocking task.
              (append ancestors (list current) descendants))))))
 
 ;;;###autoload
-(defun counsel-org-clock-history ()
-  "Display the history of org-clock via Ivy."
-  (interactive)
+(defun counsel-org-clock-history (&optional arg)
+  "Display the history of org-clock via Ivy.
+
+If prefix ARG is given, rebuild the history from `org-agenda-files'."
+  (interactive "P")
+  (when arg
+    (counsel-org-clock-rebuild-history))
   (ivy-read "org-clock history: "
             (cl-remove-duplicates
              (cl-loop for marker in org-clock-history
@@ -149,6 +154,51 @@ The result is used in `counsel-org-clock-context' when there is a clocking task.
   ;;   ;; https://github.com/emacs-china/org-mode/blob/6dc6eb3b029ec00c10e20dcfaa0b6e328bf36e03/etc/ORG-NEWS
   ;;   (org-get-heading t t t t))
   )
+
+;;;; History
+(defun counsel-org-clock--last-clock ()
+  "Get the last clock time in the entry."
+  (when (re-search-forward (concat "^[ \t]*" org-clock-string)
+                           (save-excursion
+                             ;; Jump to a position after the beginning of the entry
+                             (end-of-line)
+                             (re-search-forward org-heading-regexp nil 'noerror))
+                           'noerror)
+    (let ((src (thing-at-point 'line 'no-properties)))
+      (when (string-match (org-re-timestamp 'inactive) src)
+        (org-time-string-to-time (match-string 0 src))))))
+
+(defun counsel-org-clock--get-history-entries (limit &optional include-archives)
+  "Get org-clock-history entries from `org-agenda-files'."
+  (--> (org-map-entries (lambda ()
+                          (let ((marker (point-marker))
+                                (time (counsel-org-clock--last-clock)))
+                            (when time
+                              (cons time marker))))
+                        nil
+                        (if include-archives 'agenda-with-archives 'agenda))
+       (cl-remove nil it)
+       (cl-sort it #'time-less-p :key 'car)
+       (nreverse it)
+       (-take limit it)
+       (mapcar #'cdr it)))
+
+(defcustom counsel-org-clock-history-limit org-clock-history-length
+  "The number of `org-clock-history' items to be rebuild."
+  :group 'counsel-org-clock
+  :type 'integer)
+
+(defcustom counsel-org-clock-history-include-archives nil
+  "If non-nil, include archive files when rebuilding the clock history."
+  :group 'counsel-org-clock
+  :type 'bool)
+
+(defun counsel-org-clock-rebuild-history ()
+  "Rebuild `org-clock-history' from `org-agenda-files'."
+  (message "Rebuilding org-clock-history...")
+  (setq org-clock-history (counsel-org-clock--get-history-entries
+                           counsel-org-clock-history-limit
+                           counsel-org-clock-history-include-archives)))
 
 ;;;; Actions
 ;;;;; Macros to help you define actions
