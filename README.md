@@ -51,6 +51,11 @@ You can also access a bunch of alternative actions from `M-o`, including:
 
 If you run `counsel-org-clock-history` with a prefix argument, it reads clock entries in `org-agenda-files` and rebuilds `org-clock-history` variable. 
 
+## Alternatives
+
+- [org-mru-clock](https://github.com/unhammer/org-mru-clock)
+  - [Comparison between counsel-org-clock and org-mru-clock by Marcin Borkowski](http://mbork.pl/2018-04-28_org-mru-clock)
+
 ## Thanks
 
 - [mbork](https://github.com/mbork) ([#1](https://github.com/akirak/counsel-org-clock/pull/1))
