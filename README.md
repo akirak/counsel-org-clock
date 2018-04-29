@@ -31,6 +31,7 @@ Actions for the selected headline (`M-o`):
 
 - Emacs 24.3 (with Org)
 - Ivy
+- dash.el
 
 ## Installation
 
