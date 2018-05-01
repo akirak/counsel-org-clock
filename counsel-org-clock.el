@@ -471,15 +471,15 @@ See `counsel-org-clock-default-action'."
 ;;;;; Alternative actions
 
 (defcustom counsel-org-clock-actions
-  '(("g" goto "goto")
-    ("n" narrow "narrow")
-    ("s" indirect "show in indirect buffer")
-    ("t" todo "change todo state")
-    ("q" set-tags "set tags")
-    ("p" set-property "set property")
-    ("I" clock-in "clock in")
-    ("O" clock-out "clock out (if current)")
-    ("l" store-link "store link"))
+  '(("g" goto "Go to")
+    ("n" narrow "Narrow to the entry")
+    ("s" indirect "Show in indirect buffer")
+    ("t" todo "Change the TODO state")
+    ("q" set-tags "Set tags")
+    ("p" set-property "Set a property")
+    ("I" clock-in "Clock in")
+    ("O" clock-out "Clock out (if current)")
+    ("l" store-link "Store link"))
   "List of actions available in commands in counsel-org-clock.
 
 These actions will be available in `counsel-org-clock-context' and
