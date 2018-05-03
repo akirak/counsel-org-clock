@@ -11,7 +11,7 @@ There are currently the following two commands:
 
 - When you are clocking in a task, `counsel-org-clock-context` displays the task, its ancestors, and its descendants via Ivy. When not clocking in, this function behaves the same as `counsel-org-clock-history`. 
 - `counsel-org-clock-history` displays entries in `org-clock-history` variable via Ivy.
-  - With a prefix argument, `counsel-org-clock-history` rebuilds the history from clock entries in `org-agenda-files`.
+  - With a prefix argument, `counsel-org-clock-history` rebuilds the history from clock entries in `org-agenda-files` before displaying it.
 
 ## Screenshots
 
@@ -50,7 +50,7 @@ You can also access a bunch of alternative actions from `M-o`, including:
 - Clock in/out
 - Store a link
 
-If you run `counsel-org-clock-history` with a prefix argument, it reads clock entries in `org-agenda-files` and rebuilds `org-clock-history` variable. 
+If you run `counsel-org-clock-history` with a prefix argument, it reads clock entries in `org-agenda-files` and rebuilds `org-clock-history` variable before displaying the history contents. 
 
 ## Alternatives
 
