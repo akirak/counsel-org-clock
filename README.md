@@ -7,7 +7,7 @@ Counsel-org-clock provides commands for displaying org clock entries via [Counse
 
 ## Features
 
-There are currently the following two commands:
+This package contains the following two commands:
 
 - When you are clocking in a task, `counsel-org-clock-context` displays the task, its ancestors, and its descendants via Ivy. When not clocking in, this function behaves the same as `counsel-org-clock-history`. 
 - `counsel-org-clock-history` displays entries in `org-clock-history` variable via Ivy.
