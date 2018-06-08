@@ -487,7 +487,8 @@ These actions will be available in `counsel-org-clock-context' and
   :type '(repeat (list (string :tag "Key")
                        counsel-org-clock-action-type
                        (string :tag "Label")))
-  :set (lambda (_ value)
+  :set (lambda (symbol value)
+         (set-default symbol value)
          (let ((actions (cl-loop for (key action label) in value
                                  collect (list key
                                                `(lambda (cand)
