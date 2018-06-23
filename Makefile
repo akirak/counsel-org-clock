@@ -16,5 +16,5 @@ include emake.mk
 emake.mk:                       ## download the emake Makefile
 	curl -O 'https://raw.githubusercontent.com/vermiculus/emake.el/$(EMAKE_SHA1)/emake.mk'
 
-test: test-ert test-buttercup   ## run tests
+test:
 lint: lint-package-lint lint-checkdoc ## run lints
