@@ -201,6 +201,7 @@ If INCLUDE-ARCHIVES is non-nil, archives are included in the scanning."
 
 (defun counsel-org-clock-rebuild-history ()
   "Rebuild `org-clock-history' from `org-agenda-files'."
+  (interactive)
   (message "Rebuilding org-clock-history...")
   (setq org-clock-history (counsel-org-clock--get-history-entries
                            counsel-org-clock-history-limit
