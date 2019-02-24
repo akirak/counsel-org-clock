@@ -40,6 +40,16 @@
 (require 'org-clock)
 (require 'dash)
 
+;;;; Custom variables
+(defcustom counsel-org-clock-goto-fallback-function nil
+  "Function called inside `counsel-org-clock-goto' when no clock is running.
+
+When this function is set to non-nil, `counsel-org-clock-goto' calls
+the function when no active clock is currently running.
+Otherwise, the function lets you jump to the last active clock."
+  :type 'function
+  :group 'counsel-org-clock)
+
 ;;;; Counsel commands
 
 ;;;###autoload
@@ -119,6 +129,28 @@ If prefix ARG is given, rebuild the history from `org-agenda-files'."
             :caller 'counsel-org-clock-history
             :require-match t
             :action #'counsel-org-clock--run-history-action))
+
+;;;###autoload
+(defun counsel-org-clock-goto (&optional arg)
+  "Convenient replacement for `org-clock-goto'.
+
+This function lets you navigate either to the current clock or through
+the clock history.
+
+Without a prefix argument, this is basically the same as
+`org-clock-goto'.  The difference from `org-clock-goto' is that it
+calls `counsel-org-clock-goto-fallback-function' when it is set
+and there is no active clock running.
+
+With a single universal prefix argument, this function calls
+`counsel-org-clock-history', which lets you browse the clock history."
+  (interactive "P")
+  (pcase arg
+    ('nil (cond
+           ((org-clocking-p) (org-clock-goto))
+           ((functionp counsel-org-clock-goto-fallback-function) (funcall counsel-org-clock-goto-fallback-function))
+           (t (org-clock-goto))))
+    ('(4) (counsel-org-clock-history))))
 
 ;;;; Functions to format candidates
 
