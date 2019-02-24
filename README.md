@@ -12,6 +12,7 @@ This package contains the following two commands:
 - When you are clocking in a task, `counsel-org-clock-context` displays the task, its ancestors, and its descendants via Ivy. When not clocking in, this function behaves the same as `counsel-org-clock-history`. 
 - `counsel-org-clock-history` displays entries in `org-clock-history` variable via Ivy.
   - With a prefix argument, `counsel-org-clock-history` rebuilds the history from clock entries in `org-agenda-files` before displaying it.
+- `counsel-org-clock-goto` command is a replacement for `org-clock-goto` which lets you navigate to the active clock and through the clock history.
 
 ## Screenshots
 
@@ -39,6 +40,8 @@ This package is available on MELPA as `counsel-org-clock`.
 
 ## Usage
 
+### counsel-org-clock-context and counsel-org-clock-history
+
 Run `counsel-org-clock-context` or `counsel-org-clock-history`. By default, these functions jump to a selected headline. You can change the default action by setting `counsel-org-clock-default-action` variable. 
 
 You can also access a bunch of alternative actions from `M-o`, including:
@@ -51,6 +54,19 @@ You can also access a bunch of alternative actions from `M-o`, including:
 - Store a link
 
 If you run `counsel-org-clock-history` with a prefix argument, it reads clock entries in `org-agenda-files` and rebuilds `org-clock-history` variable before displaying the history contents. 
+
+### counsel-org-clock-goto
+
+There is also `counsel-org-clock-goto` command. Without a prefix argument, this command lets you jump to the active clock. With a universal prefix argument (`C-u`), it runs `counsel-org-clock-history`, which lets you browse your clock history. 
+
+You can also customize what this command does when there is no active clock.
+If you set `counsel-org-clock-goto-fallback-function` to a function, the command calls the function when there is no active clock.
+
+I bind `M-g M-j` to this command:
+
+``` emacs-lisp
+(global-set-key (kbd "M-g M-j") #'counsel-org-clock-goto)
+```
 
 ## Alternatives
 
