@@ -57,7 +57,12 @@ If you run `counsel-org-clock-history` with a prefix argument, it reads clock en
 
 ### counsel-org-clock-goto
 
-There is also `counsel-org-clock-goto` command. Without a prefix argument, this command lets you jump to the active clock. With a universal prefix argument (`C-u`), it runs `counsel-org-clock-history`, which lets you browse your clock history. 
+There is also `counsel-org-clock-goto` command. It behaves as follows:
+
+- Without a prefix argument, this command lets you jump to the active clock. 
+- With a universal prefix argument (`C-u`), it calls `counsel-org-clock-context`.
+- With two universal prefix arguments (`C-u C-u`), it runs `counsel-org-clock-history`, which lets you browse your clock history. 
+- With three universal prefix arguments (`C-u C-u C-u`), it runs `counsel-org-clock-history` with an argument. That is, it lets you browse the clock history after rebuilding it from `org-agenda-files`.
 
 You can also customize what this command does when there is no active clock.
 If you set `counsel-org-clock-goto-fallback-function` to a function, the command calls the function when there is no active clock.
