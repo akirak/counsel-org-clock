@@ -3,7 +3,7 @@
 ;; Copyright (C) 2018 by Akira Komamura
 
 ;; Author: Akira Komamura <akira.komamura@gmail.com>
-;; Version: 0.2.1
+;; Version: 0.2.2
 ;; Package-Requires: ((emacs "24.3") (ivy "0.10.0") (dash "2.0"))
 ;; URL: https://github.com/akirak/counsel-org-clock
 
