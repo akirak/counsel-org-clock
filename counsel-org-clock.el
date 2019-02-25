@@ -143,14 +143,21 @@ calls `counsel-org-clock-goto-fallback-function' when it is set
 and there is no active clock running.
 
 With a single universal prefix argument, this function calls
-`counsel-org-clock-history', which lets you browse the clock history."
+`counsel-org-clock-context'.
+
+With two universal prefix arguments, this function calls
+`counsel-org-clock-history', which lets you browse the clock
+history.  With three universal prefix arguments, this function
+rebuilds the clock history and lets you browse it."
   (interactive "P")
   (pcase arg
     ('nil (cond
            ((org-clocking-p) (org-clock-goto))
            ((functionp counsel-org-clock-goto-fallback-function) (funcall counsel-org-clock-goto-fallback-function))
            (t (org-clock-goto))))
-    ('(4) (counsel-org-clock-history))))
+    ('(4) (counsel-org-clock-context))
+    ('(16) (counsel-org-clock-history))
+    ('(64) (counsel-org-clock-history t))))
 
 ;;;; Functions to format candidates
 
