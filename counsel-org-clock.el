@@ -50,23 +50,39 @@ Otherwise, the function lets you jump to the last active clock."
   :type 'function
   :group 'counsel-org-clock)
 
+(defcustom counsel-org-clock-goto-number-command-alist
+  nil
+  "Alist of pairs of a numeric prefix and a command.
+
+These commands are called when `counsel-org-clock-goto' is called
+with a numeric prefix."
+  :type `(alist :key-type integer
+                :value-type function
+                :options
+                ,(number-sequence -1 9))
+  :group 'counsel-org-clock)
+
 ;;;; Counsel commands
 
 ;;;###autoload
-(defun counsel-org-clock-context (&optional arg)
+(defun counsel-org-clock-context (&optional marker)
   "Display the current org-clock, its ancestors, and its descendants via Ivy.
 
-If there is no clocking task, display the clock history using
-`counsel-org-clock-history'.
+If an Org heading is given as MARKER, it displays the context
+around the entry instead of the current clock.
 
-If prefix ARG is non-nil, restore the clock history from `org-agenda-files'."
-  (interactive "P")
-  (if (org-clocking-p)
-      (counsel-org-clock--ivy-context org-clock-marker
-                                      (format "headings around current org-clock [%s]: "
-                                              (file-name-nondirectory
-                                               (buffer-file-name (marker-buffer org-clock-marker)))))
-    (counsel-org-clock-history arg)))
+If there is no clocking task, display the clock history using
+`counsel-org-clock-history'.  If the function is called interactively,
+the prefix argument is passed to the function.  That is, it restores
+the clock history from `org-agenda-files'."
+  (interactive)
+  (if (or (markerp marker) (org-clocking-p))
+      (let ((marker (or marker org-clock-marker)))
+        (counsel-org-clock--ivy-context marker
+                                        (format "Headings in %s: "
+                                                (file-name-nondirectory
+                                                 (buffer-file-name (marker-buffer marker))))))
+    (counsel-org-clock-history current-prefix-arg)))
 
 (defun counsel-org-clock--ivy-context (marker prompt)
   "Display the context of an org heading pointed by MARKER with PROMPT via Ivy.
@@ -142,6 +158,9 @@ Without a prefix argument, this is basically the same as
 calls `counsel-org-clock-goto-fallback-function' when it is set
 and there is no active clock running.
 
+With a numeric prefix argument, a command/function defined in
+`counsel-org-clock-goto-number-command-alist' is called.
+
 With a single universal prefix argument, this function calls
 `counsel-org-clock-context'.
 
@@ -155,9 +174,19 @@ rebuilds the clock history and lets you browse it."
            ((org-clocking-p) (org-clock-goto))
            ((functionp counsel-org-clock-goto-fallback-function) (funcall counsel-org-clock-goto-fallback-function))
            (t (org-clock-goto))))
+    ((pred numberp) (counsel-org-clock--call-number-command arg))
     ('(4) (counsel-org-clock-context))
     ('(16) (counsel-org-clock-history))
     ('(64) (counsel-org-clock-history t))))
+
+(defun counsel-org-clock--call-number-command (arg)
+  "Call a command associated with a number ARG."
+  (if-let ((cmd (alist-get arg counsel-org-clock-goto-number-command-alist)))
+      (cl-etypecase cmd
+        (command (call-interactively cmd))
+        (function (funcall cmd)))
+    (user-error "There is no entry for %d in counsel-org-clock-goto-number-command-alist"
+                arg)))
 
 ;;;; Functions to format candidates
 
