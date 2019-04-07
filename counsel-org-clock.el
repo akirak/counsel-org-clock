@@ -65,7 +65,7 @@ with a numeric prefix."
 ;;;; Counsel commands
 
 ;;;###autoload
-(defun counsel-org-clock-context (&optional marker)
+(defun counsel-org-clock-context (&optional marker arg)
   "Display the current org-clock, its ancestors, and its descendants via Ivy.
 
 If an Org heading is given as MARKER, it displays the context
@@ -73,16 +73,16 @@ around the entry instead of the current clock.
 
 If there is no clocking task, display the clock history using
 `counsel-org-clock-history'.  If the function is called interactively,
-the prefix argument is passed to the function.  That is, it restores
-the clock history from `org-agenda-files'."
-  (interactive)
+the prefix argument ARG is passed to the function.  That is, it
+restores the clock history from `org-agenda-files'."
+  (interactive (list nil current-prefix-arg))
   (if (or (markerp marker) (org-clocking-p))
       (let ((marker (or marker org-clock-marker)))
         (counsel-org-clock--ivy-context marker
                                         (format "Headings in %s: "
                                                 (file-name-nondirectory
                                                  (buffer-file-name (marker-buffer marker))))))
-    (counsel-org-clock-history current-prefix-arg)))
+    (counsel-org-clock-history arg)))
 
 (defun counsel-org-clock--ivy-context (marker prompt)
   "Display the context of an org heading pointed by MARKER with PROMPT via Ivy.
