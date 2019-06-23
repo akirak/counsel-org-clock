@@ -62,6 +62,31 @@ with a numeric prefix."
                 ,(number-sequence -1 9))
   :group 'counsel-org-clock)
 
+(defcustom counsel-org-clock-goto-use-dedicated-frame nil
+  "When non-nil, `counsel-org-clock-goto' uses a dedicated frame.
+
+When this variable is non-nil, counsel-org-clock-goto uses
+dedicated frame for the currently clocked-in entry.
+This means that it reuses the previous frame created on its own if any.
+Otherwise, it creates a new frame."
+  :type 'boolean
+  :group 'counsel-org-clock)
+
+(defcustom counsel-org-clock-current-clock-frame-parameters nil
+  "Alist of frame parameters for the frame for the current clock.
+
+If `counsel-org-clock-goto-use-dedicated-frame' is non-nil, this
+value is used for the frame for the currently clocked-in entry.
+
+For the frame parameters, see `make-frame'."
+  :type '(alist :key-type symbol
+                :value-type sexp)
+  :group 'counsel-org-clock)
+
+;;;; Variables
+(defvar counsel-org-clock-current-clock-frame nil
+  "Dedicated frame for the currently clocked entry.")
+
 ;;;; Counsel commands
 
 ;;;###autoload
@@ -171,13 +196,22 @@ rebuilds the clock history and lets you browse it."
   (interactive "P")
   (pcase arg
     ('nil (cond
-           ((org-clocking-p) (org-clock-goto))
+           ((org-clocking-p) (counsel-org-clock---goto))
            ((functionp counsel-org-clock-goto-fallback-function) (funcall counsel-org-clock-goto-fallback-function))
-           (t (org-clock-goto))))
+           (t (counsel-org-clock---goto))))
     ((pred numberp) (counsel-org-clock--call-number-command arg))
     ('(4) (counsel-org-clock-context))
     ('(16) (counsel-org-clock-history))
     ('(64) (counsel-org-clock-history t))))
+
+(defun counsel-org-clock---goto ()
+  "Go to the currently clocked-in entry."
+  (when counsel-org-clock-goto-use-dedicated-frame
+    (unless (and counsel-org-clock-current-clock-frame
+                 (frame-live-p counsel-org-clock-current-clock-frame))
+      (setq counsel-org-clock-current-clock-frame (make-frame counsel-org-clock-current-clock-frame-parameters)))
+    (select-frame counsel-org-clock-current-clock-frame))
+  (org-clock-goto))
 
 (defun counsel-org-clock--call-number-command (arg)
   "Call a command associated with a number ARG."
