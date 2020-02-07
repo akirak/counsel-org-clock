@@ -132,19 +132,20 @@ If prefix ARG is given, rebuild the history from `org-agenda-files'."
   (when arg
     (counsel-org-clock-rebuild-history))
   (ivy-read "org-clock history: "
-            (cl-remove-duplicates
-             (cl-loop for marker in org-clock-history
-                      when (markerp marker)
-                      when (buffer-live-p (marker-buffer marker))
-                      collect (ignore-errors
-                                (with-current-buffer (org-base-buffer (marker-buffer marker))
-                                  (org-with-wide-buffer
-                                   (goto-char marker)
-                                   (counsel-org-clock--candidate-path-at-point)))))
-             :key #'cdr)
+            (->> org-clock-history
+                 (-filter #'markerp)
+                 (-filter (lambda (marker) (buffer-live-p (marker-buffer marker))))
+                 (-map (lambda (marker)
+                         (cons (counsel-org-clock--candidate-path marker)
+                               marker))))
             :caller 'counsel-org-clock-history
             :require-match t
             :action #'counsel-org-clock--run-history-action))
+
+(defun counsel-org-clock--candidate-path (marker)
+  (with-current-buffer (marker-buffer marker)
+    (goto-char marker)
+    (car (counsel-org-clock--candidate-path-at-point))))
 
 ;;;###autoload
 (defun counsel-org-clock-goto (&optional arg)
@@ -199,19 +200,11 @@ rebuilds the clock history and lets you browse it."
 
 (defun counsel-org-clock--candidate-path-at-point ()
   "Build a candidate for Ivy containing the path."
-  (cons (format "%s: %s%s"
-                (file-name-nondirectory (buffer-file-name))
-                (apply 'concat
-                       (nreverse (save-excursion
-                                   (cl-loop for cont = (org-up-heading-safe)
-                                            while cont
-                                            collect (concat (counsel-org-clock--get-heading-clean)
-                                                            " > ")))))
-                (org-get-heading))
-        (save-excursion
-          ;; Move the position to the beginning of the entry for checking duplicates
-          (goto-char (org-entry-beginning-position))
-          (point-marker))))
+  (let ((filename (file-name-nondirectory (buffer-file-name
+                                           (org-base-buffer (current-buffer)))))
+        (outline (org-format-outline-path (org-get-outline-path t t) nil nil " > ")))
+    (cons (concat filename ": " outline)
+          (org-entry-beginning-position))))
 
 (defun counsel-org-clock--get-heading-clean ()
   "`org-get-heading' with options applied."
@@ -251,7 +244,7 @@ If INCLUDE-ARCHIVES is non-nil, archives are included in the scanning."
                               (cons time marker))))
                         nil
                         (if include-archives 'agenda-with-archives 'agenda))
-       (cl-remove nil it)
+       (delq nil it)
        (cl-sort it #'time-less-p :key 'car)
        (nreverse it)
        (-take limit it)
