@@ -143,6 +143,7 @@ If prefix ARG is given, rebuild the history from `org-agenda-files'."
             :action #'counsel-org-clock--run-history-action))
 
 (defun counsel-org-clock--candidate-path (marker)
+  "Format the outline path at MARKER."
   (with-current-buffer (marker-buffer marker)
     (goto-char marker)
     (car (counsel-org-clock--candidate-path-at-point))))
@@ -159,7 +160,7 @@ Without a prefix argument, this is basically the same as
 calls `counsel-org-clock-goto-fallback-function' when it is set
 and there is no active clock running.
 
-With a numeric prefix argument, a command/function defined in
+With a numeric prefix argument ARG, a command/function defined in
 `counsel-org-clock-goto-number-command-alist' is called.
 
 With a single universal prefix argument, this function calls
