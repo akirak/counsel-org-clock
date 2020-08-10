@@ -4,7 +4,7 @@
 
 ;; Author: Akira Komamura <akira.komamura@gmail.com>
 ;; Version: 0.2.2
-;; Package-Requires: ((emacs "24.3") (ivy "0.10.0") (dash "2.0"))
+;; Package-Requires: ((emacs "25.1") (ivy "0.10.0") (dash "2.0"))
 ;; URL: https://github.com/akirak/counsel-org-clock
 
 ;; This file is not part of GNU Emacs.
@@ -153,7 +153,7 @@ If prefix ARG is given, rebuild the history from `org-agenda-files'."
 This function lets you navigate either to the current clock or through
 the clock history.
 
-Without a prefix argument, this is basically the same as
+Without a prefix argument ARG, this is basically the same as
 `org-clock-goto'.  The difference from `org-clock-goto' is that it
 calls `counsel-org-clock-goto-fallback-function' when it is set
 and there is no active clock running.
@@ -181,7 +181,7 @@ rebuilds the clock history and lets you browse it."
 
 (defun counsel-org-clock--call-number-command (arg)
   "Call a command associated with a number ARG."
-  (if-let ((cmd (alist-get arg counsel-org-clock-goto-number-command-alist)))
+  (if-let (cmd (alist-get arg counsel-org-clock-goto-number-command-alist))
       (cl-etypecase cmd
         (command (call-interactively cmd))
         (function (funcall cmd)))
