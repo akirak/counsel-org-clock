@@ -1,4 +1,5 @@
-# language: emacs-lisp  # No longer allowed https://github.com/rolandwalker/emacs-travis/blob/master/.travis.yml#L18
+# language: emacs-lisp  # No longer allowed https://docs.travis-ci.com/user/languages/
+# https://github.com/rolandwalker/emacs-travis/blob/master/.travis.yml#L18
 os: linux
 dist: focal
 cache:
