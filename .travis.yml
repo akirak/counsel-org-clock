@@ -1,15 +1,15 @@
-language: emacs-lisp
-sudo: required
-dist: trusty
+# language: emacs-lisp  # No longer allowed https://github.com/rolandwalker/emacs-travis/blob/master/.travis.yml#L18
+os: linux
+dist: focal
 cache:
 - directories:
   - "$HOME/emacs"
-matrix:
+jobs:
   fast_finish: true
   allow_failures:
   - env: EMACS_VERSION=snapshot
 env:
-  matrix:
+  jobs:
   - EMACS_VERSION=25.1
   - EMACS_VERSION=25.2
   - EMACS_VERSION=25.3
