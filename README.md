@@ -3,7 +3,7 @@
 
 # counsel-org-clock
 
-Counsel-org-clock provides commands for displaying org clock entries via [Counsel (Ivy)](https://github.com/abo-abo/swiper) interface.
+Counsel Org Clock provides commands for displaying org clock entries via [Counsel (Ivy)](https://github.com/abo-abo/swiper) interface.
 
 ## Features
 
@@ -77,7 +77,7 @@ I bind `M-g M-j` to this command:
 
 - [org-mru-clock](https://github.com/unhammer/org-mru-clock)
   - [Comparison between counsel-org-clock and org-mru-clock by Marcin Borkowski](http://mbork.pl/2018-04-28_org-mru-clock)
-    - Counsel-org-clock now rebuilds the history when you run `counsel-org-clock-history`/`counsel-org-clock-context` with a prefix argument!
+    - Counsel Org Clock now rebuilds the history when you run `counsel-org-clock-history`/`counsel-org-clock-context` with a prefix argument!
 
 ## Thanks
 
